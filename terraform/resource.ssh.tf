@@ -20,7 +20,7 @@ resource "local_file" "public_key" {
 }
 
 resource "local_file" "ssh_config" {
-  filename = "${var.auth_dir}/ssh_config"
+  filename = "../ansible/ssh_config"
   content = templatefile("${var.templates_dir}/auth/ssh-config.tftpl", {
     bastion = local.hostnames.bastion
     hosts = {

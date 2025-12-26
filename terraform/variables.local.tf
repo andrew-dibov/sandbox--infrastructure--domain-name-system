@@ -1,14 +1,14 @@
 locals {
   hostnames = {
-    bastion            = "bastion"
-    stub_resolver      = "stub-resolver"
-    recursive_resolver = "recursive-resolver"
-    root               = "root"
-    top_level_domain   = "top-level-domain"
-    authoritative_a    = "authoritative-ns1"
-    authoritative_b    = "authoritative-ns2"
-    www_a              = "www-a"
-    www_b              = "www-b"
+    bastion   = "bastion"
+    stub      = "stub"
+    recursive = "recursive"
+    root      = "root"
+    tld       = "tld"
+    auth_a    = "auth-a"
+    auth_b    = "auth-b"
+    www_a     = "www-a"
+    www_b     = "www-b"
   }
   hosts = {
     (local.hostnames.bastion) = {
@@ -33,7 +33,7 @@ locals {
 
       ansible_role = "bastion"
     },
-    (local.hostnames.stub_resolver) = {
+    (local.hostnames.stub) = {
       resources = {
         cores         = 2
         memory        = 2
@@ -53,9 +53,9 @@ locals {
         preemptible = true
       }
 
-      ansible_role = "stub-resolver"
+      ansible_role = "stub"
     },
-    (local.hostnames.recursive_resolver) = {
+    (local.hostnames.recursive) = {
       resources = {
         cores         = 2
         memory        = 2
@@ -75,7 +75,7 @@ locals {
         preemptible = true
       }
 
-      ansible_role = "recursive-resolver"
+      ansible_role = "recursive"
     },
     (local.hostnames.root) = {
       resources = {
@@ -99,7 +99,7 @@ locals {
 
       ansible_role = "root"
     },
-    (local.hostnames.top_level_domain) = {
+    (local.hostnames.tld) = {
       resources = {
         cores         = 2
         memory        = 2
@@ -119,9 +119,9 @@ locals {
         preemptible = true
       }
 
-      ansible_role = "top-level-domain"
+      ansible_role = "tld"
     },
-    (local.hostnames.authoritative_a) = {
+    (local.hostnames.auth_a) = {
       resources = {
         cores         = 2
         memory        = 2
@@ -141,9 +141,9 @@ locals {
         preemptible = true
       }
 
-      ansible_role = "authoritative-a"
+      ansible_role = "auth-a"
     },
-    (local.hostnames.authoritative_b) = {
+    (local.hostnames.auth_b) = {
       resources = {
         cores         = 2
         memory        = 2
@@ -163,7 +163,7 @@ locals {
         preemptible = true
       }
 
-      ansible_role = "authoritative-b"
+      ansible_role = "auth-b"
     },
     (local.hostnames.www_a) = {
       resources = {
@@ -212,14 +212,14 @@ locals {
   }
 
   cloud_init_templates = {
-    (local.hostnames.bastion)            = templatefile("${var.templates_dir}/cloud-init/bastion.yaml.tftpl", { packages = [] })
-    (local.hostnames.stub_resolver)      = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip", "iproute2"] })
-    (local.hostnames.recursive_resolver) = templatefile("${var.templates_dir}/cloud-init/recursive-resolver.yaml.tftpl", { packages = ["python3", "python3-pip"] })
-    (local.hostnames.root)               = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip"] })
-    (local.hostnames.top_level_domain)   = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip"] })
-    (local.hostnames.authoritative_a)    = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip"] })
-    (local.hostnames.authoritative_b)    = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip"] })
-    (local.hostnames.www_a)              = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip"] })
-    (local.hostnames.www_b)              = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip"] })
+    (local.hostnames.bastion)   = templatefile("${var.templates_dir}/cloud-init/bastion.yaml.tftpl", { packages = [] })
+    (local.hostnames.stub)      = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip", "iproute2"] })
+    (local.hostnames.recursive) = templatefile("${var.templates_dir}/cloud-init/recursive-resolver.yaml.tftpl", { packages = ["python3", "python3-pip"] })
+    (local.hostnames.root)      = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip"] })
+    (local.hostnames.tld)       = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip"] })
+    (local.hostnames.auth_a)    = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip"] })
+    (local.hostnames.auth_b)    = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip"] })
+    (local.hostnames.www_a)     = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip"] })
+    (local.hostnames.www_b)     = templatefile("${var.templates_dir}/cloud-init/default.yaml.tftpl", { packages = ["python3", "python3-pip"] })
   }
 }

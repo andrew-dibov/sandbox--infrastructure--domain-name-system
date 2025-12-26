@@ -1,8 +1,9 @@
+---
 all:
   hosts:
   %{ for name, vm in hosts ~}
   ${trimspace(name)}:
-    %{ if contains(["bastion", "stub-resolver", "recursive-resolver", "root", "top-level-domain", "authoritative-a", "authoritative-b", "load-balancer"], vm.labels.ansible_role) }
+    %{ if contains(["bastion", "stub", "recursive", "root", "tld", "auth-a", "auth-b", "www-a", "www-b"], vm.labels.ansible_role) }
       ansible_host: ${trimspace(name)}
     %{ endif }
   %{ endfor ~}

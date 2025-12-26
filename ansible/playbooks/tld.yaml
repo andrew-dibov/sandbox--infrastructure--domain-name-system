@@ -1,26 +1,30 @@
 ---
-- name: "Root"
+- name: "TLD"
   become: true
-  hosts: root
+  hosts: tld
   vars_files:
     - "../vars/common.yaml"
     - "../vars/terraform.yaml"
 
   vars:
-    zone: "."
+    zone: "domain"
 
-    soa_mname: "ns.root."
-    soa_rname: "admin.root."
+    root_zone: "."
+    root_ns: "ns.root."
 
-    tld_domain: "domain."
-    tld_ns_server: "ns.domain."
+    soa_mname: "ns.domain."
+    soa_rname: "admin.domain."
+
+    auth_domain: "subdomain"
+    auth_ns_server_a: "ns.auth-a.subdomain"
+    auth_ns_server_b: "ns.auth-b.subdomain"
 
   tasks:
-    - name: "Root : update"
+    - name: "TLD : update"
       ansible.builtin.apt:
         update_cache: true
 
-    - name: "Root : install"
+    - name: "TLD : install"
       ansible.builtin.apt:
         state: present
         name:
@@ -28,17 +32,17 @@
           - bind9utils
           - dnsutils
 
-    - name: "Root : stop service"
+    - name: "TLD : stop service"
       ansible.builtin.systemd:
         name: bind9
         state: stopped
 
-    - name: "Root : remove config dir"
+    - name: "TLD : remove config dir"
       ansible.builtin.file:
         path: "{{ bind_path }}"
         state: absent
 
-    - name: "Root : create config dir"
+    - name: "TLD : create config dir"
       ansible.builtin.file:
         path: "{{ bind_path }}"
         state: directory
@@ -46,15 +50,15 @@
         group: bind
         mode: '0755'
 
-    - name: "Root : create named.conf"
+    - name: "TLD : create named.conf"
       ansible.builtin.template:
-        src: "templates/root/root.conf.j2"
+        src: "templates/tld/tld.conf.j2"
         dest: "{{ bind_path }}/named.conf"
         owner: root
         group: bind
         mode: '0644'
 
-    - name: "Root : create zones dir"
+    - name: "TLD : create zones dir"
       ansible.builtin.file:
         path: "{{ zones_path }}"
         state: directory
@@ -62,7 +66,7 @@
         group: bind
         mode: '0755'
 
-    - name: "Root : create zones"
+    - name: "TLD : create zones"
       ansible.builtin.template:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
@@ -70,27 +74,28 @@
         group: bind
         mode: '0644'
       loop:
-        - { src: "templates/root/db.root.j2", dest: "{{ zones_path }}/db.root" }
+        - { src: "templates/tld/db.tld.j2", dest: "{{ zones_path }}/db.tld" }
+        - { src: "templates/common/db.root.hints.j2", dest: "{{ zones_path }}/db.root.hints" }
         - { src: "templates/common/db.local.j2", dest: "{{ zones_path }}/db.local" }
         - { src: "templates/common/db.0.j2", dest: "{{ zones_path }}/db.0" }
         - { src: "templates/common/db.127.j2", dest: "{{ zones_path }}/db.127" }
         - { src: "templates/common/db.255.j2", dest: "{{ zones_path }}/db.255" }
 
-    - name: "Root : check named.conf"
+    - name: "TLD : check named.conf"
       ansible.builtin.command:
         cmd: "named-checkconf {{ bind_path }}/named.conf"
       register: conf_status
       failed_when: conf_status.rc != 0
       changed_when: false
 
-    - name: "Root : check db.root"
+    - name: "TLD : check db.tld"
       ansible.builtin.command:
-        cmd: "named-checkzone {{ zone }} {{ zones_path }}/db.root"
+        cmd: "named-checkzone {{ zone }} {{ zones_path }}/db.tld"
       register: zone_status
       failed_when: zone_status.rc != 0
       changed_when: false
 
-    - name: "Root : reload and restart service"
+    - name: "TLD : reload and restart service"
       ansible.builtin.systemd:
         name: bind9
         state: restarted

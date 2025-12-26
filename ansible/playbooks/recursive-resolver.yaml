@@ -1,8 +1,0 @@
-- name: "Recursive Resolver"
-  hosts: recursive-resolver
-  become: true
-
-  tasks:
-    - name: "Recursive Resolver : update cache"
-      ansible.builtin.apt:
-        update_cache: true

@@ -21,13 +21,13 @@ resource "local_file" "public_key" {
 
 resource "local_file" "ssh_config" {
   filename = "../ansible/ssh_config"
-  content = templatefile("${var.templates_dir}/auth/ssh-config.tftpl", {
-    bastion = local.hostnames.bastion
+  content = templatefile("${var.templates_dir}/ssh-config.tftpl", {
+    bast = local.hostnames.bast
     hosts = {
       for name, vm in yandex_compute_instance.hosts :
       name => {
-        is_bastion = name == (local.hostnames.bastion)
-        host_name  = name == (local.hostnames.bastion) ? vm.network_interface[0].nat_ip_address : vm.network_interface[0].ip_address
+        is_bastion = name == (local.hostnames.bast)
+        host_name  = name == (local.hostnames.bast) ? vm.network_interface[0].nat_ip_address : vm.network_interface[0].ip_address
         key_path   = "${var.auth_dir}/${name}"
         user       = "debian"
       }

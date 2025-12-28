@@ -1,0 +1,43 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+packages: 
+  %{ for pkg in pkgs ~}
+  - ${pkg}
+  %{ endfor ~}
+
+write_files:
+  - path: /etc/ssh/sshd_config.d/99-bastion.conf
+    content: |
+      Port 22
+      ListenAddress 0.0.0.0
+
+      AllowUsers debian
+
+      LoginGraceTime 30
+      PermitRootLogin no
+      MaxAuthTries 3
+      MaxSessions 10
+
+      PubkeyAuthentication yes
+      PermitEmptyPasswords no
+      PasswordAuthentication no
+      ChallengeResponseAuthentication no
+
+      AllowAgentForwarding yes
+      AllowTcpForwarding yes
+      PermitTunnel yes
+      X11Forwarding no
+      GatewayPorts no
+
+      AcceptEnv LANG LC_*
+      UseDNS no
+
+      ClientAliveInterval 300
+      ClientAliveCountMax 2
+      Compression delayed
+      TCPKeepAlive yes
+
+runcmd:
+  - systemctl restart sshd

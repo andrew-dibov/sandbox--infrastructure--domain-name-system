@@ -1,8 +1,0 @@
-#cloud-init
-package_update: true
-package_upgrade: true
-
-packages:
-  %{ for package in packages~}
-  - ${package}
-  %{ endfor ~}

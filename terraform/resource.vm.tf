@@ -42,33 +42,31 @@ resource "yandex_compute_instance" "hosts" {
 
 resource "local_file" "ansible_cfg" {
   filename = "../ansible/ansible.cfg"
-  content = templatefile("${var.templates_dir}/ansible/ansible.cfg.tftpl", {
-    auth_dir = var.auth_dir
-  })
+  content  = templatefile("${var.templates_dir}/ansible/ansible.tftpl", {})
 }
 
 resource "local_file" "ansible_inventory" {
   filename = "../ansible/inventory/terraform.yaml"
-  content = templatefile("${var.templates_dir}/ansible/inventory.yaml.tftpl", {
+  content = templatefile("${var.templates_dir}/ansible/inventory.tftpl", {
     hosts = yandex_compute_instance.hosts
   })
 }
 
 resource "local_file" "ansible_variables" {
-  filename = "../ansible/vars/terraform.yaml"
-  content = templatefile("${var.templates_dir}/ansible/variables.yaml.tftpl", {
-    stub_ip      = yandex_compute_instance.hosts["${local.hostnames.stub}"].network_interface[0].ip_address
-    recursive_ip = yandex_compute_instance.hosts["${local.hostnames.recursive}"].network_interface[0].ip_address
+  filename = "../ansible/variables/terraform.yaml"
+  content = templatefile("${var.templates_dir}/ansible/variables.tftpl", {
+    su_cidr = var.vpc_subnet_v4_cidr_blocks[0]
+
+    stub_ip = yandex_compute_instance.hosts["${local.hostnames.stub}"].network_interface[0].ip_address
+    recr_ip = yandex_compute_instance.hosts["${local.hostnames.recr}"].network_interface[0].ip_address
 
     root_ip = yandex_compute_instance.hosts["${local.hostnames.root}"].network_interface[0].ip_address
-    tld_ip  = yandex_compute_instance.hosts["${local.hostnames.tld}"].network_interface[0].ip_address
+    tldd_ip = yandex_compute_instance.hosts["${local.hostnames.tldd}"].network_interface[0].ip_address
 
-    auth_a_ip = yandex_compute_instance.hosts["${local.hostnames.auth_a}"].network_interface[0].ip_address
-    auth_b_ip = yandex_compute_instance.hosts["${local.hostnames.auth_b}"].network_interface[0].ip_address
+    au_a_ip = yandex_compute_instance.hosts["${local.hostnames.au_a}"].network_interface[0].ip_address
+    au_b_ip = yandex_compute_instance.hosts["${local.hostnames.au_b}"].network_interface[0].ip_address
 
-    www_a_ip = yandex_compute_instance.hosts["${local.hostnames.www_a}"].network_interface[0].ip_address
-    www_b_ip = yandex_compute_instance.hosts["${local.hostnames.www_b}"].network_interface[0].ip_address
-
-    subnet_cidr = var.vpc_subnet_v4_cidr_blocks[0]
+    ho_a_ip = yandex_compute_instance.hosts["${local.hostnames.ho_a}"].network_interface[0].ip_address
+    ho_b_ip = yandex_compute_instance.hosts["${local.hostnames.ho_b}"].network_interface[0].ip_address
   })
 }

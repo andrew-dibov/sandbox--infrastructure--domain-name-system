@@ -40,14 +40,17 @@ zone "255.in-addr.arpa" {
 };
 
 logging {
-  channel query_log {
-    file "{{ bind_logs_path }}/{{ bind_query_logs_file }}" versions 10 size 50m;
-    severity info;
+  channel logs {
+    file "{{ bind_logs_path }}/{{ bind_logs_file }}" versions 10 size 20m;
+
     print-time yes;
     print-category yes;
     print-severity yes;
+
+    severity debug 1;
   };
-    
-  category queries { query_log; };
-  category query-errors { query_log; };
+
+  category queries { logs; };
+  category query-errors { logs; };
+  category resolver { logs; };
 };

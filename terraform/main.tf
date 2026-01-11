@@ -1,30 +1,40 @@
 # terraform.tfvars
-variable "yandex_cloud_cloud_id" {
+variable "yandex_cloud__cloud_id" {
   type = string
 }
 
 # terraform.tfvars
-variable "yandex_cloud_folder_id" {
+variable "yandex_cloud__folder_id" {
   type = string
 }
 
 # terraform.tfvars
-variable "yandex_cloud_zone_id" {
+variable "yandex_cloud__zone_id" {
   type = string
 }
 
 # terraform.tfvars
-variable "auth_dir" {
+variable "auth__dir" {
   type = string
 }
 
 # terraform.tfvars
-variable "templates_dir" {
+variable "tf_templates__dir" {
   type = string
 }
 
 # terraform.tfvars
-variable "service_account_key_name" {
+variable "sa_key__name" {
+  type = string
+}
+
+# terraform.tfvars
+variable "py__version" {
+  type = string
+}
+
+# terraform.tfvars
+variable "ansible__dir" {
   type = string
 }
 
@@ -52,9 +62,8 @@ terraform {
 }
 
 provider "yandex" {
-  cloud_id  = var.yandex_cloud_cloud_id
-  folder_id = var.yandex_cloud_folder_id
-
-  zone                     = var.yandex_cloud_zone_id
-  service_account_key_file = "${var.auth_dir}/${var.service_account_key_name}"
+  cloud_id                 = var.yandex_cloud__cloud_id
+  folder_id                = var.yandex_cloud__folder_id
+  zone                     = var.yandex_cloud__zone_id
+  service_account_key_file = "${var.auth__dir}/${var.sa_key__name}"
 }

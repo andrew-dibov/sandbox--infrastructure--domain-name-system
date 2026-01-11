@@ -4,8 +4,8 @@
   hosts:
     - root
     - tldd
-    - au-a
-    - au-b
+    - au_a
+    - au_b
     - recr
   vars_files:
     - "../variables/common.yaml"
@@ -30,9 +30,9 @@
         group: vector
         mode: '0644'
 
-    - name: "VCTR : set permissions"
+    - name: "VCTR : set permissions : {{ bind_logs_file }}"
       ansible.builtin.file:
-        dest: "{{ bind_logs_path }}/{{ bind_query_logs_file }}"
+        dest: "{{ bind_logs_path }}/{{ bind_logs_file }}"
         owner: bind
         group: vector
         mode: '0644'

@@ -14,11 +14,11 @@ $TTL {{ ttl }}
 {{ primary_ns }} IN A {{ au_a_ip }}
 {{ secondary_ns }} IN A {{ au_b_ip }}
 
-@ IN A {{ ho_a_ip }}
-@ IN A {{ ho_b_ip }}
+@ IN A {{ au_a_ip }}
+@ IN A {{ au_b_ip }}
 
-{{ www_record }} IN A {{ ho_a_ip }}
-{{ www_record }} IN A {{ ho_b_ip }}
+{{ www_record }} IN A {{ au_a_ip }}
+{{ www_record }} IN A {{ au_b_ip }}
 
-{{ www_record_a }} IN A {{ ho_a_ip }}
-{{ www_record_b }} IN A {{ ho_b_ip }}
+{{ www_record_a }} IN A {{ au_a_ip }}
+{{ www_record_b }} IN A {{ au_b_ip }}

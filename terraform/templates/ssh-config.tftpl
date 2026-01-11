@@ -1,10 +1,10 @@
-%{ for name, config in hosts ~}
+%{ for name, cfg in inss ~}
 Host ${name}
-  HostName ${config.host_name}
-  User ${config.user}
-  IdentityFile ${config.key_path}
+  HostName ${cfg.ins_name}
+  User ${cfg.user}
+  IdentityFile ${cfg.key_path}
   StrictHostKeyChecking accept-new
-%{ if !config.is_bastion ~}
+%{ if !cfg.is_bast ~}
   ProxyJump ${bast}
 %{ endif ~}
 %{ endfor ~}

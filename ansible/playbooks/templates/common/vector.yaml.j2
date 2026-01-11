@@ -1,16 +1,16 @@
 sources:
-  bind9_queries:
+  bind:
     type: file
     include:
-      - "{{ bind_logs_path }}/{{ bind_query_logs_file }}"
+      - "{{ bind_logs_path }}/{{ bind_logs_file }}"
     read_from: beginning
 
 sinks:
   to_logstash:
     type: socket
-    inputs: ["bind9_queries"]
-    address: "{{ prel_ip }}:5044"
+    inputs: ["bind"]
+    address: "{{ towr_ip }}:5044"
     mode: tcp
     encoding:
-      codec: text
+      codec: json
     healthcheck: false

@@ -1,0 +1,11 @@
+root_zone: "."
+root_ns: "ns.root."
+
+zone: "domain"
+
+soa_mname: "ns.domain."
+soa_rname: "admin.domain."
+
+auth_domain: "subdomain"
+auth_ns_server_a: "ns.auth-a.subdomain"
+auth_ns_server_b: "ns.auth-b.subdomain"

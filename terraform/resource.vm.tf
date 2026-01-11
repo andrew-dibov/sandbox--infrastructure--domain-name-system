@@ -1,14 +1,19 @@
-resource "yandex_compute_instance" "hosts" {
-  for_each = local.hosts
+data "yandex_compute_image" "img" {
+  family = var.img__name
+}
 
-  zone        = yandex_vpc_subnet.subnet.zone
-  platform_id = var.platform_id
+resource "yandex_compute_instance" "inss" {
+  for_each = local.inss__confs
 
-  name     = each.key
-  hostname = each.key
+  zone        = yandex_vpc_subnet.sub.zone
+  platform_id = var.ins__platform_id
+
+  name        = each.key
+  description = each.value.description
+  hostname    = each.key
 
   labels = {
-    ansible_role = each.value.ansible_role
+    role = each.value.role
   }
 
   resources {
@@ -19,13 +24,13 @@ resource "yandex_compute_instance" "hosts" {
 
   boot_disk {
     initialize_params {
-      image_id = data.yandex_compute_image.debian.id
+      image_id = data.yandex_compute_image.img.id
       size     = each.value.initialize_params.size
     }
   }
 
   network_interface {
-    subnet_id          = yandex_vpc_subnet.subnet.id
+    subnet_id          = yandex_vpc_subnet.sub.id
     nat                = each.value.network_interface.nat
     security_group_ids = each.value.network_interface.security_group_ids
   }
@@ -36,39 +41,34 @@ resource "yandex_compute_instance" "hosts" {
 
   metadata = {
     ssh-keys  = "debian:${tls_private_key.key[each.key].public_key_openssh}"
-    user-data = local.cloud_init_templates[each.key]
+    user-data = local.inss__templates[each.key]
   }
 }
 
 resource "local_file" "ansible_cfg" {
-  filename = "../ansible/ansible.cfg"
-  content  = templatefile("${var.templates_dir}/ansible/ansible.tftpl", {})
-}
-
-resource "local_file" "ansible_inventory" {
-  filename = "../ansible/inventory/terraform.yaml"
-  content = templatefile("${var.templates_dir}/ansible/inventory.tftpl", {
-    hosts = yandex_compute_instance.hosts
+  filename = "${var.ansible__dir}/ansible.cfg"
+  content  = templatefile("${var.tf_templates__dir}/ansible/ansible.tftpl", {
+    py = "python${var.py__version}"
   })
 }
 
-resource "local_file" "ansible_variables" {
-  filename = "../ansible/variables/terraform.yaml"
-  content = templatefile("${var.templates_dir}/ansible/variables.tftpl", {
-    su_cidr = var.vpc_subnet_v4_cidr_blocks[0]
+resource "local_file" "ansible_inv" {
+  filename = "${var.ansible__dir}/inventory/terraform.yaml"
+  content = templatefile("${var.tf_templates__dir}/ansible/inventory.tftpl", {
+    inss = yandex_compute_instance.inss
+  })
+}
 
-    stub_ip = yandex_compute_instance.hosts["${local.hostnames.stub}"].network_interface[0].ip_address
-    recr_ip = yandex_compute_instance.hosts["${local.hostnames.recr}"].network_interface[0].ip_address
-
-    root_ip = yandex_compute_instance.hosts["${local.hostnames.root}"].network_interface[0].ip_address
-    tldd_ip = yandex_compute_instance.hosts["${local.hostnames.tldd}"].network_interface[0].ip_address
-
-    au_a_ip = yandex_compute_instance.hosts["${local.hostnames.au_a}"].network_interface[0].ip_address
-    au_b_ip = yandex_compute_instance.hosts["${local.hostnames.au_b}"].network_interface[0].ip_address
-
-    ho_a_ip = yandex_compute_instance.hosts["${local.hostnames.ho_a}"].network_interface[0].ip_address
-    ho_b_ip = yandex_compute_instance.hosts["${local.hostnames.ho_b}"].network_interface[0].ip_address
-
-    prel_ip = yandex_compute_instance.hosts["${local.hostnames.prel}"].network_interface[0].ip_address
+resource "local_file" "ansible_var" {
+  filename = "${var.ansible__dir}/variables/terraform.yaml"
+  content = templatefile("${var.tf_templates__dir}/ansible/variables.tftpl", {
+    su_cidr = var.vpc_subnet__v4_cidr_blocks[0]
+    towr_ip = yandex_compute_instance.inss["${local.inss__names.towr}"].network_interface[0].ip_address
+    root_ip = yandex_compute_instance.inss["${local.inss__names.root}"].network_interface[0].ip_address
+    tldd_ip = yandex_compute_instance.inss["${local.inss__names.tldd}"].network_interface[0].ip_address
+    au_a_ip = yandex_compute_instance.inss["${local.inss__names.au_a}"].network_interface[0].ip_address
+    au_b_ip = yandex_compute_instance.inss["${local.inss__names.au_b}"].network_interface[0].ip_address
+    recr_ip = yandex_compute_instance.inss["${local.inss__names.recr}"].network_interface[0].ip_address
+    stub_ip = yandex_compute_instance.inss["${local.inss__names.stub}"].network_interface[0].ip_address
   })
 }

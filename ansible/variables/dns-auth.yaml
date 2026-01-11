@@ -1,0 +1,14 @@
+root_zone: "."
+root_ns: "ns.root."
+
+zone: "subdomain.domain"
+
+soa_mname: "ns.au-a.subdomain.domain."
+soa_rname: "admin.subdomain.domain."
+
+primary_ns: "ns.au-a.subdomain.domain."
+secondary_ns: "ns.au-b.subdomain.domain."
+
+www_record: "www"
+www_record_a: "wwa"
+www_record_b: "wwb"

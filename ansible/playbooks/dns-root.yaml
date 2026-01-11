@@ -3,16 +3,9 @@
   become: true
   hosts: root
   vars_files:
+    - "../variables/dns-root.yaml"
     - "../variables/common.yaml"
     - "../variables/terraform.yaml"
-
-  vars:
-    role: "dns-root"
-    zone: "."
-    soa_mname: "ns.root."
-    soa_rname: "admin.root."
-    tld_domain: "domain."
-    tld_ns_server: "ns.domain."
 
   tasks:
     - name: "ROOT : update"
@@ -32,12 +25,12 @@
         name: bind9
         state: stopped
 
-    - name: "ROOT : remove config dir"
+    - name: "ROOT : remove dir : {{ bind_path }}"
       ansible.builtin.file:
         path: "{{ bind_path }}"
         state: absent
 
-    - name: "ROOT : create config dir"
+    - name: "ROOT : create dir : {{ bind_path }}"
       ansible.builtin.file:
         path: "{{ bind_path }}"
         state: directory
@@ -53,7 +46,7 @@
         group: bind
         mode: '0644'
 
-    - name: "ROOT : create zones dir"
+    - name: "ROOT : create dir : {{ zone_path }}"
       ansible.builtin.file:
         path: "{{ zone_path }}"
         state: directory
@@ -89,7 +82,7 @@
       failed_when: zone_status.rc != 0
       changed_when: false
 
-    - name: "ROOT : create logs dir"
+    - name: "ROOT : create dir : {{ bind_logs_path }}"
       ansible.builtin.file:
         path: "{{ bind_logs_path }}"
         state: directory
@@ -97,9 +90,9 @@
         group: bind
         mode: '0755'
 
-    - name: "ROOT : create logs file"
+    - name: "ROOT : create file : {{ bind_logs_file }}"
       ansible.builtin.file:
-        path: "{{ bind_logs_path }}/{{ bind_query_logs_file }}"
+        path: "{{ bind_logs_path }}/{{ bind_logs_file }}"
         state: touch
         owner: bind
         group: bind

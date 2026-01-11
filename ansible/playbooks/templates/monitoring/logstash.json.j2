@@ -1,0 +1,24 @@
+{
+  "index_patterns": ["dns-*"],
+  "template": {
+    "mappings": {
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "client_address": { "type": "ip" },
+        "server_address": { "type": "ip" },
+        "client_port": { "type": "integer" },
+        "client_request": { "type": "keyword" },
+        "log_category": { "type": "keyword" },
+        "log_timestamp": { "type": "date", "format": "dd-MMM-yyyy HH:mm:ss.SSS" },
+        "query_class": { "type": "keyword" },
+        "query_domain": { "type": "keyword" },
+        "resolver_state": { "type": "keyword" },
+        "error_details": { "type": "keyword" },
+        "query_error": { "type": "keyword" },
+        "query_flags": { "type": "keyword" },
+        "query_type": { "type": "keyword" },
+        "host": { "type": "keyword" }
+      }
+    }
+  }
+}

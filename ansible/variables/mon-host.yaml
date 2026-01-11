@@ -1,0 +1,13 @@
+elastic_dir: "{{ towr_root_dir }}/elastic"
+prometh_dir: "{{ towr_root_dir }}/prometh"
+grafana_dir: "{{ towr_root_dir }}/grafana"
+
+elastic_data_dir: "{{ towr_root_dir }}/data"
+prometh_data_dir: "{{ towr_root_dir }}/data"
+grafana_data_dir: "{{ towr_root_dir }}/data"
+
+elastic_conf_dir: "{{ towr_root_dir }}/conf"
+prometh_conf_dir: "{{ towr_root_dir }}/conf"
+grafana_conf_dir: "{{ towr_root_dir }}/conf"
+
+elastic_templates_dir: "{{ towr_root_dir }}/templates"

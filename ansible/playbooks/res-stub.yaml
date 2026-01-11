@@ -3,40 +3,36 @@
   become: true
   hosts: stub
   vars_files:
+    - "../variables/res-stub.yaml"
     - "../variables/common.yaml"
     - "../variables/terraform.yaml"
 
-  vars:
-    domains: "www.subdomain.domain,wwa.subdomain.domain,wwb.subdomain.domain"
-    container_name: "stub"
-    repository: "andrewdibov/sandbox-infrastructure-domain-name-system:latest"
-
   tasks:
-    - name: "STUB : check container"
+    - name: "STUB : check ct : {{ container_name }}"
       ansible.builtin.shell: |
         docker ps -a --filter "name={{ container_name }}" --format "{{ '{{.Names}}' }}"
       register: container
       changed_when: false
 
-    - name: "STUB : stop docker container"
+    - name: "STUB : stop ct : {{ container_name }}"
       ansible.builtin.shell: |
         docker stop {{ container_name }}
       changed_when: false
       when: container.stdout == container_name
 
-    - name: "STUB : remove docker container"
+    - name: "STUB : remove ct : {{ container_name }}"
       ansible.builtin.shell: |
         docker rm {{ container_name }}
       changed_when: false
       when: container.stdout == container_name
 
-    - name: "STUB : update docker image"
+    - name: "STUB : update img : {{ repository }}"
       ansible.builtin.shell: |
         docker pull {{ repository }}
       changed_when: false
       when: container.stdout == container_name
 
-    - name: "STUB : run docker container"
+    - name: "STUB : run ct : {{ container_name }}"
       ansible.builtin.shell: |
         docker run -dit \
           --dns {{ recr_ip }} \

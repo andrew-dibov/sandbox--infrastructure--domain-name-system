@@ -5,8 +5,9 @@ templates_path: "templates"
 # bind
 bind_path: "/etc/bind"
 zone_path: "/etc/bind/zone"
+
 bind_logs_path: "/var/log/named"
-bind_query_logs_file: "queries.log"
+bind_logs_file: "named.log"
 
 # dns
 ttl: "2"
@@ -15,8 +16,8 @@ ref: "3600"
 ret: "1800"
 exp: "3600"
 
-# prometheus + elasticsearch
-prel_root_dir: "/opt/prel"
+# elasticsearch
+towr_root_dir: "/opt/towr"
 
 elasticsearch_img: "elastic/elasticsearch:9.2.3"
 logstash_img: "elastic/logstash:9.1.9"

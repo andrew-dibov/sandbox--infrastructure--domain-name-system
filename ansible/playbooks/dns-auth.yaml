@@ -2,23 +2,12 @@
 - name: "AUTH"
   become: true
   hosts:
-    - au-a
-    - au-b
+    - au_a
+    - au_b
   vars_files:
+    - "../variables/dns-auth.yaml"
     - "../variables/common.yaml"
     - "../variables/terraform.yaml"
-
-  vars:
-    zone: "subdomain.domain"
-    root_zone: "."
-    root_ns: "ns.root."
-    soa_mname: "ns.au-a.subdomain.domain."
-    soa_rname: "admin.subdomain.domain."
-    primary_ns: "ns.au-a.subdomain.domain."
-    secondary_ns: "ns.au-b.subdomain.domain."
-    www_record: "www"
-    www_record_a: "wwa"
-    www_record_b: "wwb"
 
   tasks:
     - name: "AUTH : update"
@@ -38,12 +27,12 @@
         name: bind9
         state: stopped
 
-    - name: "AUTH : remove config dir"
+    - name: "AUTH : remove dir : {{ bind_path }}"
       ansible.builtin.file:
         path: "{{ bind_path }}"
         state: absent
 
-    - name: "AUTH : create config dir"
+    - name: "AUTH : create dir : {{ bind_path }}"
       ansible.builtin.file:
         path: "{{ bind_path }}"
         state: directory
@@ -59,7 +48,7 @@
         group: bind
         mode: '0644'
 
-    - name: "AUTH : create zones dir"
+    - name: "AUTH : create dir : {{ zone_path }}"
       ansible.builtin.file:
         path: "{{ zone_path }}"
         state: directory
@@ -96,7 +85,7 @@
       failed_when: zone_status.rc != 0
       changed_when: false
 
-    - name: "AUTH : create logs dir"
+    - name: "AUTH : create dir : {{ bind_logs_path }}"
       ansible.builtin.file:
         path: "{{ bind_logs_path }}"
         state: directory
@@ -104,9 +93,9 @@
         group: bind
         mode: '0755'
 
-    - name: "AUTH : create logs file"
+    - name: "AUTH : create file : {{ bind_logs_file }}"
       ansible.builtin.file:
-        path: "{{ bind_logs_path }}/{{ bind_query_logs_file }}"
+        path: "{{ bind_logs_path }}/{{ bind_logs_file }}"
         state: touch
         owner: bind
         group: bind

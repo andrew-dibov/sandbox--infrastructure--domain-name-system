@@ -1,0 +1,7 @@
+zone: "."
+
+soa_mname: "ns.root."
+soa_rname: "admin.root."
+
+tld_domain: "domain."
+tld_ns_server: "ns.domain."

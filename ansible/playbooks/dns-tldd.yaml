@@ -1,21 +1,18 @@
 ---
-- name: "RECR"
+- name: "TLDD"
   become: true
-  hosts: recr
+  hosts: tldd
   vars_files:
+    - "../variables/dns-tldd.yaml"
     - "../variables/common.yaml"
     - "../variables/terraform.yaml"
 
-  vars:
-    root_zone: "."
-    root_ns: "ns.root."
-
   tasks:
-    - name: "RECR : update"
+    - name: "TLDD : update"
       ansible.builtin.apt:
         update_cache: true
 
-    - name: "RECR : install"
+    - name: "TLDD : install"
       ansible.builtin.apt:
         state: present
         name:
@@ -23,17 +20,17 @@
           - bind9utils
           - dnsutils
 
-    - name: "RECR : stop service"
+    - name: "TLDD : stop service"
       ansible.builtin.systemd:
         name: bind9
         state: stopped
 
-    - name: "RECR : remove config dir"
+    - name: "TLDD : remove dir : {{ bind_path }}"
       ansible.builtin.file:
         path: "{{ bind_path }}"
         state: absent
 
-    - name: "RECR : create config dir"
+    - name: "TLDD : create dir : {{ bind_path }}"
       ansible.builtin.file:
         path: "{{ bind_path }}"
         state: directory
@@ -41,15 +38,15 @@
         group: bind
         mode: '0755'
 
-    - name: "RECR : create named.conf"
+    - name: "TLDD : create named.conf"
       ansible.builtin.template:
-        src: "{{ templates_path }}/recursive/recr.conf.j2"
+        src: "{{ templates_path }}/top-level-domain/tldd.conf.j2"
         dest: "{{ bind_path }}/named.conf"
         owner: root
         group: bind
         mode: '0644'
 
-    - name: "RECR : create zones dir"
+    - name: "TLDD : create dir : {{ zone_path }}"
       ansible.builtin.file:
         path: "{{ zone_path }}"
         state: directory
@@ -57,7 +54,7 @@
         group: bind
         mode: '0755'
 
-    - name: "RECR : create zones"
+    - name: "TLDD : create zones"
       ansible.builtin.template:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
@@ -65,20 +62,28 @@
         group: bind
         mode: '0644'
       loop:
+        - { src: "{{ templates_path }}/top-level-domain/db.tldd.j2", dest: "{{ zone_path }}/db.tldd" }
         - { src: "{{ templates_path }}/common/db.root.hints.j2", dest: "{{ zone_path }}/db.root.hints" }
         - { src: "{{ templates_path }}/common/db.local.j2", dest: "{{ zone_path }}/db.local" }
         - { src: "{{ templates_path }}/common/db.0.j2", dest: "{{ zone_path }}/db.0" }
         - { src: "{{ templates_path }}/common/db.127.j2", dest: "{{ zone_path }}/db.127" }
         - { src: "{{ templates_path }}/common/db.255.j2", dest: "{{ zone_path }}/db.255" }
 
-    - name: "RECR : check named.conf"
+    - name: "TLDD : check named.conf"
       ansible.builtin.command:
         cmd: "named-checkconf {{ bind_path }}/named.conf"
       register: conf_status
       failed_when: conf_status.rc != 0
       changed_when: false
 
-    - name: "RECR : create logs dir"
+    - name: "TLDD : check db.tld"
+      ansible.builtin.command:
+        cmd: "named-checkzone {{ zone }} {{ zone_path }}/db.tldd"
+      register: zone_status
+      failed_when: zone_status.rc != 0
+      changed_when: false
+
+    - name: "TLDD : create dir : {{ bind_logs_path }}"
       ansible.builtin.file:
         path: "{{ bind_logs_path }}"
         state: directory
@@ -86,15 +91,15 @@
         group: bind
         mode: '0755'
 
-    - name: "RECR : create logs file"
+    - name: "TLDD : create file : {{ bind_logs_file }}"
       ansible.builtin.file:
-        path: "{{ bind_logs_path }}/{{ bind_query_logs_file }}"
+        path: "{{ bind_logs_path }}/{{ bind_logs_file }}"
         state: touch
         owner: bind
         group: bind
         mode: '0644'
 
-    - name: "RECR : reload and restart service"
+    - name: "TLDD : reload and restart service"
       ansible.builtin.systemd:
         name: bind9
         state: restarted

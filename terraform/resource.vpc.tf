@@ -1,34 +1,43 @@
 resource "yandex_vpc_network" "net" {
-  name = var.vpc_network_name
+  name        = var.vpc_net__name
+  description = "VPC : network : net"
 }
 
-resource "yandex_vpc_gateway" "nat" {
-  name = var.vpc_gateway_nat_name
+resource "yandex_vpc_subnet" "sub" {
+  network_id = yandex_vpc_network.net.id
+
+  name        = var.vpc_subnet__name
+  description = "VPC : subnet : sub"
+
+  zone           = var.yandex_cloud__zone_id
+  v4_cidr_blocks = var.vpc_subnet__v4_cidr_blocks
+  route_table_id = yandex_vpc_route_table.rt.id
+}
+
+resource "yandex_vpc_gateway" "gw" {
+  name        = var.vpc_gw__name
+  description = "VPC : gateway : gw : egress for net"
+
   shared_egress_gateway {}
 }
 
-resource "yandex_vpc_route_table" "nat" {
+resource "yandex_vpc_route_table" "rt" {
   network_id = yandex_vpc_network.net.id
-  name       = var.vpc_route_table_nat_name
+
+  name        = var.vpc_rt__name
+  description = "VPC : routing table : rt : egress traffic to gw"
 
   static_route {
     destination_prefix = "0.0.0.0/0"
-    gateway_id         = yandex_vpc_gateway.nat.id
+    gateway_id         = yandex_vpc_gateway.gw.id
   }
 }
 
-resource "yandex_vpc_subnet" "subnet" {
+resource "yandex_vpc_security_group" "bast" {
   network_id = yandex_vpc_network.net.id
 
-  name           = var.vpc_subnet_name
-  zone           = var.yandex_cloud_zone_id
-  v4_cidr_blocks = var.vpc_subnet_v4_cidr_blocks
-  route_table_id = yandex_vpc_route_table.nat.id
-}
-
-resource "yandex_vpc_security_group" "bastion" {
-  network_id = yandex_vpc_network.net.id
-  name       = var.security_group_bastion_name
+  name        = var.vpc_sg_bast__name
+  description = "VPC : security group : bastion : core access"
 
   ingress {
     protocol       = "TCP"
@@ -39,7 +48,7 @@ resource "yandex_vpc_security_group" "bastion" {
   egress {
     protocol       = "TCP"
     port           = 22
-    v4_cidr_blocks = yandex_vpc_subnet.subnet.v4_cidr_blocks
+    v4_cidr_blocks = yandex_vpc_subnet.sub.v4_cidr_blocks
   }
 
   egress {
@@ -61,14 +70,16 @@ resource "yandex_vpc_security_group" "bastion" {
   }
 }
 
-resource "yandex_vpc_security_group" "monitoring" {
+resource "yandex_vpc_security_group" "towr" {
   network_id = yandex_vpc_network.net.id
-  name       = var.security_group_monitoring_name
+
+  name        = var.vpc_sg_towr__name
+  description = "VPC : security group : towr : observability"
 
   ingress {
     protocol          = "TCP"
     port              = 22
-    security_group_id = yandex_vpc_security_group.bastion.id
+    security_group_id = yandex_vpc_security_group.bast.id
   }
 
   ingress {
@@ -79,7 +90,7 @@ resource "yandex_vpc_security_group" "monitoring" {
 
   ingress {
     protocol       = "ANY"
-    v4_cidr_blocks = yandex_vpc_subnet.subnet.v4_cidr_blocks
+    v4_cidr_blocks = yandex_vpc_subnet.sub.v4_cidr_blocks
   }
 
   egress {
@@ -99,50 +110,42 @@ resource "yandex_vpc_security_group" "monitoring" {
     port           = 443
     v4_cidr_blocks = ["0.0.0.0/0"]
   }
-
-  # egress {
-  #   protocol          = "ANY"
-  #   security_group_id = yandex_vpc_security_group.internal.id
-  # }
 }
 
-resource "yandex_vpc_security_group" "internal" {
+resource "yandex_vpc_security_group" "core" {
   network_id = yandex_vpc_network.net.id
-  name       = var.security_group_internal_name
+
+  name        = var.vpc_sg_core__name
+  description = "VPC : security group : core : core infra"
 
   ingress {
     protocol          = "TCP"
     port              = 22
-    security_group_id = yandex_vpc_security_group.bastion.id
+    security_group_id = yandex_vpc_security_group.bast.id
   }
 
   ingress {
     protocol       = "UDP"
     port           = 53
-    v4_cidr_blocks = yandex_vpc_subnet.subnet.v4_cidr_blocks
+    v4_cidr_blocks = yandex_vpc_subnet.sub.v4_cidr_blocks
   }
 
   ingress {
     protocol       = "TCP"
     port           = 53
-    v4_cidr_blocks = yandex_vpc_subnet.subnet.v4_cidr_blocks
+    v4_cidr_blocks = yandex_vpc_subnet.sub.v4_cidr_blocks
   }
-
-  # ingress {
-  #   protocol          = "ANY"
-  #   security_group_id = yandex_vpc_security_group.monitoring.id
-  # }
 
   egress {
     protocol       = "UDP"
     port           = 53
-    v4_cidr_blocks = yandex_vpc_subnet.subnet.v4_cidr_blocks
+    v4_cidr_blocks = yandex_vpc_subnet.sub.v4_cidr_blocks
   }
 
   egress {
     protocol       = "TCP"
     port           = 53
-    v4_cidr_blocks = yandex_vpc_subnet.subnet.v4_cidr_blocks
+    v4_cidr_blocks = yandex_vpc_subnet.sub.v4_cidr_blocks
   }
 
   egress {
@@ -165,6 +168,6 @@ resource "yandex_vpc_security_group" "internal" {
 
   egress {
     protocol          = "ANY"
-    security_group_id = yandex_vpc_security_group.monitoring.id
+    security_group_id = yandex_vpc_security_group.towr.id
   }
 }

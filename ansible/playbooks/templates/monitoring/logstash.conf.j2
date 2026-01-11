@@ -1,50 +1,92 @@
 input {
   tcp {
     port => 5044
-    codec => plain
+    codec => json_lines
   }
 }
 
 filter {
   dissect {
     mapping => {
-      "message" => "%{date} %{time}.%{ms} %{category}: %{level}: client %{ref} %{client_ip}#%{port} (%{domain}): query: %{query} %{class} %{type} %{flags}"
+      "[message]" => "%{log_date} %{log_time}.%{log_ms} %{log_category}: %{rest}"
+    }
+    tag_on_failure => ["__initial_dissect_fail"]
+  }
+
+  if "__initial_dissect_fail" in [tags] {
+    mutate {
+      add_tag => ["raw"]
+      add_field => { "raw_message" => "%{message}" }
+    }
+  }
+
+  if [log_category] == "queries" {
+    dissect {
+      mapping => {
+        "[rest]" => "%{} %{} %{} %{client_address}#%{client_port} (%{client_request}): %{}: %{query_domain} %{query_class} %{query_type} %{query_flags} (%{server_address})"
+      }
+      tag_on_failure => ["__queries_dissect_fail"]
+    }
+
+    if "__queries_dissect_fail" in [tags] {
+      mutate {
+        add_tag => ["raw"]
+        add_field => { "raw_message" => "%{[rest]}" }
+      }
+    } else {
+      mutate { add_tag => ["queries"] }
+    }
+  }
+
+  if [log_category] == "query-errors" {
+    dissect {
+      mapping => {
+        "[rest]" => "%{}: %{} %{} %{client_address}#%{client_port} (%{client_request}): query failed (%{query_error}) %{error_details}"
+      }
+      tag_on_failure => ["__query-errors_dissect_fail"]
+    }
+
+    if "__query-errors_dissect_fail" in [tags] {
+      mutate {
+        add_tag => ["raw"]
+        add_field => { "raw_message" => "%{[rest]}" }
+      }
+    } else {
+      mutate { add_tag => ["query-errors"] }
+    }
+  }
+
+  if [log_category] == "resolver" {
+    dissect {
+      mapping => {
+        "[rest]" => "%{}: %{resolver_state}"
+      }
+      tag_on_failure => ["__resolver_dissect_fail"]
+    }
+
+    if "__resolver_dissect_fail" in [tags] {
+      mutate {
+        add_tag => ["raw"]
+        add_field => { "raw_message" => "%{[rest]}" }
+      }
+    } else {
+      mutate { add_tag => ["resolver"] }
     }
   }
   
   mutate {
-    convert => {
-      "port" => "integer"
-    }
-  }
-  
-  mutate {
-    add_field => { "timestamp_str" => "%{date} %{time}.%{ms}" }
-  }
-  
-  date {
-    match => [ "timestamp_str", "dd-MMM-yyyy HH:mm:ss.SSS" ]
-    target => "@timestamp"
-    timezone => "UTC"
-  }
-  
-  geoip {
-    source => "client_ip"
-    target => "geo"
-  }
-  
-  mutate {
-    remove_field => [ "timestamp_str", "ref", "date", "time", "ms" ]
+    add_field => { "log_timestamp" => "%{log_date} %{log_time}.%{log_ms}" }
+    remove_field => [ "message", "file", "timestamp", "source_type", "rest", "log_date", "log_time", "log_ms" ]
   }
 }
 
 output {
   elasticsearch {
     hosts => ["elasticsearch:9200"]
-    index => "dns-queries-%{+YYYY.MM.dd}"
-    
-    template => "/usr/share/logstash/templates/dns-template.json"
-    template_name => "dns-queries-template"
+    index => "dns-%{+YYYY.MM.dd}"
+
+    template => "/usr/share/logstash/templates/logstash.json"
     template_overwrite => true
+    template_name => "dns"
   }
 }

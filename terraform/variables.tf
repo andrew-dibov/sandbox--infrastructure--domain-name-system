@@ -1,44 +1,50 @@
-variable "vpc_network_name" {
+variable "vpc_net__name" {
   type    = string
   default = "dns-net"
 }
 
-variable "vpc_gateway_nat_name" {
+variable "vpc_subnet__name" {
   type    = string
-  default = "dns-nat-gw"
+  default = "dns-sub"
 }
 
-variable "vpc_route_table_nat_name" {
-  type    = string
-  default = "dns-nat-route-table"
-}
-
-variable "vpc_subnet_name" {
-  type    = string
-  default = "dns-subnet"
-}
-
-variable "vpc_subnet_v4_cidr_blocks" {
+variable "vpc_subnet__v4_cidr_blocks" {
   type    = list(string)
   default = ["10.0.0.0/24"]
 }
 
-variable "security_group_bastion_name" {
+variable "vpc_gw__name" {
   type    = string
-  default = "dns-bastion-sg"
+  default = "dns-gw"
 }
 
-variable "security_group_monitoring_name" {
+variable "vpc_rt__name" {
   type    = string
-  default = "dns-monitoring-sg"
+  default = "dns-rt"
 }
 
-variable "security_group_internal_name" {
+variable "vpc_sg_bast__name" {
   type    = string
-  default = "dns-internal-sg"
+  default = "dns-sg-bastion"
 }
 
-variable "platform_id" {
+variable "vpc_sg_towr__name" {
+  type    = string
+  default = "dns-sg-tower"
+}
+
+variable "vpc_sg_core__name" {
+  type    = string
+  default = "dns-sg-core"
+}
+
+variable "img__name" {
+  type    = string
+  default = "debian-12"
+}
+
+variable "ins__platform_id" {
   type    = string
   default = "standard-v3"
 }
+

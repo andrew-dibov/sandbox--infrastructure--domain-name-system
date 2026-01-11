@@ -1,0 +1,3 @@
+container_name: "stub"
+repository: "andrewdibov/sandbox-infrastructure-domain-name-system:latest"
+domains: "www.subdomain.domain,wwa.subdomain.domain,wwb.subdomain.domain,unknown.subdomain.domain,error.subdomain.domain,test.subdomain.domain,fake.subdomain.domain"
